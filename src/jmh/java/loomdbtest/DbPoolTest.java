@@ -1,6 +1,7 @@
 package loomdbtest;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -83,7 +84,7 @@ public class DbPoolTest {
             if (result <= 0) {
                 throw new IllegalArgumentException(
                         "Pool size cannot be set to " + paramPoolSize
-                        + ", because the number of available processors is " + PROCESSOR_COUNT
+                                + ", because the number of available processors is " + PROCESSOR_COUNT
                 );
             }
             return result;
@@ -367,11 +368,12 @@ public class DbPoolTest {
             @Override
             public ScopedDataSource newDataSource(int poolSize) {
                 var dbLimiter = new Semaphore(poolSize);
+                var dataSource = new FixedDataSource(poolSize, TESTED_DB::newConnection);
                 return new ScopedDataSource() {
                     @Override
                     public void withConnection(ConnectionAction action) throws Exception {
                         dbLimiter.acquire();
-                        try (Connection connection = TESTED_DB.newConnection()) {
+                        try (Connection connection = dataSource.getConnection()) {
                             action.run(connection);
                         } finally {
                             dbLimiter.release();
@@ -380,6 +382,11 @@ public class DbPoolTest {
 
                     @Override
                     public void close() {
+                        try {
+                            dataSource.close();
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 };
             }
