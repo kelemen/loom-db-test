@@ -93,14 +93,26 @@ public class DbPoolTest {
         }
     }
 
+    private static void preopenConnections(int count, ScopedDataSource dataSource) throws Exception {
+        if (count <= 0) {
+            return;
+        }
+
+        dataSource.withConnection(connection -> {
+            preopenConnections(count - 1, dataSource);
+        });
+    }
+
     @Setup
     public void setup() throws Exception {
-        dataSource = dbPoolType.newDataSource(normalizePoolSize(poolSize));
+        int actualPoolSize = normalizePoolSize(poolSize);
+        dataSource = dbPoolType.newDataSource(actualPoolSize);
         if (TESTED_DB.requireKeepAlive()) {
             keepAliveConnection = TESTED_DB.newConnection();
         }
 
         dataSource.withConnection(TESTED_DB::initDb);
+        preopenConnections(actualPoolSize, dataSource);
 
         globalForkScope = exceptionTracker(forkType.newForkScope());
     }
