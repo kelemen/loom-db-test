@@ -48,6 +48,7 @@ jmh {
     setBenchmarkParameter("forkType")
     setBenchmarkParameter("cpuWork")
     setBenchmarkParameter("cpuSleepMs")
+    setBenchmarkParameter("fullConcurrentTasks")
 }
 
 tasks.withType<JavaCompile>().configureEach {

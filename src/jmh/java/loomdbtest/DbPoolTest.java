@@ -63,6 +63,9 @@ public class DbPoolTest {
     @Param({"0", "60"})
     private long cpuSleepMs;
 
+    @Param("false")
+    private boolean fullConcurrentTasks;
+
     private BenchmarkConnectionAction benchmarkConnectionAction;
     private ScopedDataSource dataSource;
     private Connection keepAliveConnection;
@@ -166,7 +169,13 @@ public class DbPoolTest {
             };
             int loopCount = PROCESSOR_COUNT * DB_TASKS_PER_PROCESSOR / 2;
             for (int i = 0; i < loopCount; i++) {
-                forkInSequence(forkScope, tasks);
+                if (fullConcurrentTasks) {
+                    for (UnsafeTask task : tasks) {
+                        forkScope.fork(task);
+                    }
+                } else {
+                    forkInSequence(forkScope, tasks);
+                }
             }
         }
     }

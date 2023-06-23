@@ -27,6 +27,8 @@ the supporter parameter names are:
 - **cpuWork**: The amount of CPU work to do in tasks not using a connection. The value is an integer as defined 
   by the `Blackhole.consumeCPU` method.
 - **cpuSleepMs**: The number of ms to sleep in tasks not using a connection.
+- **fullConcurrentTasks**: Set it to *true*, if you want all tasks to run concurrently. Otherwise, the tasks
+  will run in a partially sequential manner. This is *false* by default.
 
 If you want multiple values, then you can provide them as a comma separated list. For example:
 
