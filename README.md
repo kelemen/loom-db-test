@@ -17,6 +17,7 @@ the supporter parameter names are:
 - **connectionAction**: The action to do with a connection retrieved from the pool. The possible values are:
   - DO_QUERY: Execute a simple query.
   - SLEEP: Sleeps for 60 ms.
+  - PINNING_SLEEP: Sleeps for 60 ms, but pins the carrier thread while sleeping.
 - **dbPoolType**: The type of the connection pool. The possible values are:
   - DBCP2: Uses `BasicDataSource` of DBCP2.
   - SEMAPHORE: Uses a semaphore to limit the number of connections.

@@ -3,6 +3,7 @@ package loomdbtest;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -62,6 +63,7 @@ public class DbPoolTest {
     @Param({"0", "60"})
     private long cpuSleepMs;
 
+    private BenchmarkConnectionAction benchmarkConnectionAction;
     private ScopedDataSource dataSource;
     private Connection keepAliveConnection;
     private ForkScope globalForkScope;
@@ -105,6 +107,8 @@ public class DbPoolTest {
 
     @Setup
     public void setup() throws Exception {
+        benchmarkConnectionAction = connectionAction.createAction();
+
         int actualPoolSize = normalizePoolSize(poolSize);
         dataSource = dbPoolType.newDataSource(actualPoolSize);
         if (TESTED_DB.requireKeepAlive()) {
@@ -139,7 +143,7 @@ public class DbPoolTest {
 
     private void doDbAction(Blackhole blackhole) throws Exception {
         dataSource.withConnection(connection -> {
-            connectionAction.doDbAction(connection, blackhole);
+            benchmarkConnectionAction.run(connection, blackhole);
         });
     }
 
@@ -324,21 +328,47 @@ public class DbPoolTest {
         void run(Connection connection) throws Exception;
     }
 
+    private interface BenchmarkConnectionAction {
+        void run(Connection connection, Blackhole blackhole) throws Exception;
+    }
+
     public enum ConnectionActionType {
         DO_QUERY {
             @Override
-            public void doDbAction(Connection connection, Blackhole blackhole) throws Exception {
-                TESTED_DB.testDbAction(connection, blackhole);
+            public BenchmarkConnectionAction createAction() {
+                return TESTED_DB::testDbAction;
             }
         },
         SLEEP {
             @Override
-            public void doDbAction(Connection connection, Blackhole blackhole) throws Exception {
-                Thread.sleep(60);
+            public BenchmarkConnectionAction createAction() {
+                return (connection, blackhole) -> Thread.sleep(60);
+            }
+        },
+        PINNING_SLEEP {
+            @Override
+            public BenchmarkConnectionAction createAction() {
+                var lockQueue = new ArrayBlockingQueue<>(PROCESSOR_COUNT);
+                for (int i = 0; i < PROCESSOR_COUNT; i++) {
+                    lockQueue.add(new Object());
+                }
+                return (connection, blackhole) -> {
+                    Object lock = lockQueue.poll();
+                    if (lock == null) {
+                        throw new IllegalStateException("Lock queue is empty.");
+                    }
+                    try {
+                        synchronized (lock) {
+                            Thread.sleep(60);
+                        }
+                    } finally {
+                        lockQueue.add(lock);
+                    }
+                };
             }
         };
 
-        public abstract void doDbAction(Connection connection, Blackhole blackhole) throws Exception;
+        public abstract BenchmarkConnectionAction createAction() throws Exception;
     }
 
     public enum ForkType {
