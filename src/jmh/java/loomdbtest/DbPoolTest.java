@@ -110,9 +110,8 @@ public class DbPoolTest {
 
     @Setup
     public void setup() throws Exception {
-        benchmarkConnectionAction = connectionAction.createAction();
-
         int actualPoolSize = normalizePoolSize(poolSize);
+        benchmarkConnectionAction = connectionAction.createAction(actualPoolSize);
         dataSource = dbPoolType.newDataSource(actualPoolSize);
         if (TESTED_DB.requireKeepAlive()) {
             keepAliveConnection = TESTED_DB.newConnection();
@@ -344,21 +343,21 @@ public class DbPoolTest {
     public enum ConnectionActionType {
         DO_QUERY {
             @Override
-            public BenchmarkConnectionAction createAction() {
+            public BenchmarkConnectionAction createAction(int poolSize) {
                 return TESTED_DB::testDbAction;
             }
         },
         SLEEP {
             @Override
-            public BenchmarkConnectionAction createAction() {
+            public BenchmarkConnectionAction createAction(int poolSize) {
                 return (connection, blackhole) -> Thread.sleep(60);
             }
         },
         PINNING_SLEEP {
             @Override
-            public BenchmarkConnectionAction createAction() {
-                var lockQueue = new ArrayBlockingQueue<>(PROCESSOR_COUNT);
-                for (int i = 0; i < PROCESSOR_COUNT; i++) {
+            public BenchmarkConnectionAction createAction(int poolSize) {
+                var lockQueue = new ArrayBlockingQueue<>(poolSize);
+                for (int i = 0; i < poolSize; i++) {
                     lockQueue.add(new Object());
                 }
                 return (connection, blackhole) -> {
@@ -377,7 +376,7 @@ public class DbPoolTest {
             }
         };
 
-        public abstract BenchmarkConnectionAction createAction() throws Exception;
+        public abstract BenchmarkConnectionAction createAction(int poolSize);
     }
 
     public enum ForkType {
