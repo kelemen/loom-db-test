@@ -1,6 +1,8 @@
 .gradle/
 build/
 
+/jmh-results/
+
 .idea/
 *.iml
 *.ipr
