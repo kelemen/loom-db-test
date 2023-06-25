@@ -16,6 +16,7 @@ You may set additional parameters for the benchmark by passing the `-Pbenchmark.
 the supporter parameter names are:
 
 - **poolSize**: The size of the connection pool. If non-positive, then it is relative to the number of threads.
+  It can also be "*X", and in this case the pool size is the number of threads times X.
 - **connectionAction**: The action to do with a connection retrieved from the pool. The possible values are:
   - DO_QUERY: Execute a simple query.
   - SLEEP: Sleeps for 60 ms.

@@ -34,12 +34,11 @@ public class DbPoolTest {
     /**
      * The maximum number of concurrent connections. If non-positive, then
      * it is relative to {@code Runtime.getRuntime().availableProcessors()}.
+     * Or it can be "*X", then it will be X times the number of available
+     * processors.
      */
-    @Param({
-            "1",
-            "-1",
-    })
-    private int poolSize;
+    @Param("*4")
+    private String poolSize;
 
     @Param
     private ConnectionActionType connectionAction;
@@ -64,18 +63,23 @@ public class DbPoolTest {
     private DbKeepAliveReference keepAliveReference;
     private ForkScope globalForkScope;
 
-    private static int normalizePoolSize(int paramPoolSize) {
-        if (paramPoolSize <= 0) {
-            int result = PROCESSOR_COUNT + paramPoolSize;
+    private static int normalizePoolSize(String paramPoolSize) {
+        if (paramPoolSize.startsWith("*")) {
+            int multiplier = Integer.parseInt(paramPoolSize.substring(1));
+            return PROCESSOR_COUNT * multiplier;
+        }
+        int paramPoolSizeInt = Integer.parseInt(paramPoolSize);
+        if (paramPoolSizeInt <= 0) {
+            int result = PROCESSOR_COUNT + paramPoolSizeInt;
             if (result <= 0) {
                 throw new IllegalArgumentException(
-                        "Pool size cannot be set to " + paramPoolSize
+                        "Pool size cannot be set to " + paramPoolSizeInt
                                 + ", because the number of available processors is " + PROCESSOR_COUNT
                 );
             }
             return result;
         } else {
-            return paramPoolSize;
+            return paramPoolSizeInt;
         }
     }
 
