@@ -3,6 +3,7 @@ package loomdbtest;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
 import org.openjdk.jmh.infra.Blackhole;
 
 public enum TestedDb {
@@ -20,6 +21,20 @@ public enum TestedDb {
             )
     );
 
+    private static final TestedDb TESTED_DB;
+
+    static {
+        var testedDbName = System.getProperty("loomdbtest.testedDb");
+        try {
+            TESTED_DB = TestedDb.valueOf(testedDbName);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException(
+                    "Invalid testedDb: " + testedDbName + ". Supported values are: " + Arrays.toString(TestedDb.values()),
+                    e
+            );
+        }
+    }
+
     private final boolean requireKeepAlive;
     private final TestDbAction dbAction;
     private final JdbcConnectionInfo connectionInfo;
@@ -28,6 +43,10 @@ public enum TestedDb {
         this.requireKeepAlive = requireKeepAlive;
         this.dbAction = dbAction;
         this.connectionInfo = connectionInfo;
+    }
+
+    public static TestedDb selectedTestedDb() {
+        return TESTED_DB;
     }
 
     public boolean requireKeepAlive() {

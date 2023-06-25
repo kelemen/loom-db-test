@@ -1,17 +1,12 @@
 package loomdbtest;
 
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.sql.DataSource;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.jtrim2.cancel.Cancellation;
 import org.jtrim2.concurrent.Tasks;
 import org.jtrim2.concurrent.WaitableSignal;
@@ -34,7 +29,6 @@ import org.openjdk.jmh.infra.Blackhole;
 @State(Scope.Thread)
 @Fork(1)
 public class DbPoolTest {
-    private static final TestedDb TESTED_DB = findTestedDb();
     private static final int PROCESSOR_COUNT = Runtime.getRuntime().availableProcessors();
     private static final int DB_TASKS_PER_PROCESSOR = 4;
 
@@ -71,18 +65,6 @@ public class DbPoolTest {
     private Connection keepAliveConnection;
     private ForkScope globalForkScope;
 
-    private static TestedDb findTestedDb() {
-        var testedDbName = System.getProperty("loomdbtest.testedDb");
-        try {
-            return TestedDb.valueOf(testedDbName);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException(
-                    "Invalid testedDb: " + testedDbName + ". Supported values are: " + Arrays.toString(TestedDb.values()),
-                    e
-            );
-        }
-    }
-
     private static int normalizePoolSize(int paramPoolSize) {
         if (paramPoolSize <= 0) {
             int result = PROCESSOR_COUNT + paramPoolSize;
@@ -113,11 +95,13 @@ public class DbPoolTest {
         int actualPoolSize = normalizePoolSize(poolSize);
         benchmarkConnectionAction = connectionAction.createAction(actualPoolSize);
         dataSource = dbPoolType.newDataSource(actualPoolSize);
-        if (TESTED_DB.requireKeepAlive()) {
-            keepAliveConnection = TESTED_DB.newConnection();
+
+        var testedDb = TestedDb.selectedTestedDb();
+        if (testedDb.requireKeepAlive()) {
+            keepAliveConnection = testedDb.newConnection();
         }
 
-        dataSource.withConnection(TESTED_DB::initDb);
+        dataSource.withConnection(testedDb::initDb);
         preopenConnections(actualPoolSize, dataSource);
 
         globalForkScope = exceptionTracker(forkType.newForkScope());
@@ -192,35 +176,6 @@ public class DbPoolTest {
             tasks[offset].run();
             forkInSequence(forkScope, offset + 1, tasks);
         });
-    }
-
-    private static <T extends DataSource & AutoCloseable> ScopedDataSource fromDataSource(
-            T dataSource
-    ) {
-        return new ScopedDataSource() {
-            @Override
-            public void withConnection(ConnectionAction action) throws Exception {
-                try (Connection connection = dataSource.getConnection()) {
-                    action.run(connection);
-                }
-            }
-
-            @Override
-            public void close() {
-                try {
-                    dataSource.close();
-                } catch (Exception e) {
-                    throw ExceptionHelper.throwUnchecked(e);
-                }
-            }
-        };
-    }
-
-    private interface ScopedDataSource extends AutoCloseable {
-        void withConnection(ConnectionAction action) throws Exception;
-
-        @Override
-        void close();
     }
 
     private static ForkScope exceptionTracker(ForkScope scope) {
@@ -332,19 +287,11 @@ public class DbPoolTest {
         }
     }
 
-    private interface ConnectionAction {
-        void run(Connection connection) throws Exception;
-    }
-
-    private interface BenchmarkConnectionAction {
-        void run(Connection connection, Blackhole blackhole) throws Exception;
-    }
-
     public enum ConnectionActionType {
         DO_QUERY {
             @Override
             public BenchmarkConnectionAction createAction(int poolSize) {
-                return TESTED_DB::testDbAction;
+                return TestedDb.selectedTestedDb()::testDbAction;
             }
         },
         SLEEP {
@@ -394,54 +341,5 @@ public class DbPoolTest {
         };
 
         public abstract ForkScope newForkScope();
-    }
-
-    public enum DbPoolType {
-        DBCP2 {
-            @Override
-            public ScopedDataSource newDataSource(int poolSize) {
-                var dataSource = new BasicDataSource();
-                JdbcConnectionInfo connectionInfo = TESTED_DB.connectionInfo();
-                dataSource.setUrl(connectionInfo.jdbcUrl());
-                JdbcCredential credential = connectionInfo.credential();
-                if (credential != null) {
-                    dataSource.setUsername(credential.username());
-                    dataSource.setPassword(credential.password());
-                }
-
-                dataSource.setMaxIdle(poolSize);
-                dataSource.setMaxTotal(poolSize);
-                return fromDataSource(dataSource);
-            }
-        },
-        SEMAPHORE {
-            @Override
-            public ScopedDataSource newDataSource(int poolSize) {
-                var dbLimiter = new Semaphore(poolSize);
-                var dataSource = new FixedDataSource(poolSize, TESTED_DB::newConnection);
-                return new ScopedDataSource() {
-                    @Override
-                    public void withConnection(ConnectionAction action) throws Exception {
-                        dbLimiter.acquire();
-                        try (Connection connection = dataSource.getConnection()) {
-                            action.run(connection);
-                        } finally {
-                            dbLimiter.release();
-                        }
-                    }
-
-                    @Override
-                    public void close() {
-                        try {
-                            dataSource.close();
-                        } catch (SQLException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                };
-            }
-        };
-
-        public abstract ScopedDataSource newDataSource(int poolSize);
     }
 }
