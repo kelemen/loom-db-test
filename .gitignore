@@ -3,6 +3,8 @@ build/
 
 /jmh-results/
 
+derby.log
+
 .idea/
 *.iml
 *.ipr

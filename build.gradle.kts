@@ -69,5 +69,6 @@ dependencies {
         "H2" -> runtimeOnly("com.h2database:h2:2.1.214")
         "POSTGRES" -> runtimeOnly("org.postgresql:postgresql:42.6.0")
         "POSTGRES.OLD" -> runtimeOnly("org.postgresql:postgresql:42.4.3")
+        "JAVA_DB" -> runtimeOnly("org.apache.derby:derby:10.16.1.1")
     }
 }

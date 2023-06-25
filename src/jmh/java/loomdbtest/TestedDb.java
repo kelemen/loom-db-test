@@ -8,16 +8,23 @@ import org.openjdk.jmh.infra.Blackhole;
 
 public enum TestedDb {
     H2(
-            true,
+            connectionKeepAlive(),
             TestDbAction.DEFAULT,
             new JdbcConnectionInfo("jdbc:h2:mem:dbpooltest")
     ),
     POSTGRES(
-            false,
+            noopKeepAlive(),
             TestDbAction.DEFAULT,
             new JdbcConnectionInfo(
                     "jdbc:postgresql://localhost:5432/loomdbtest",
                     new JdbcCredential("loomdbtest", "loomdbtest")
+            )
+    ),
+    JAVA_DB(
+            javaDbKeepAlive(),
+            TestDbAction.DEFAULT_SIMPLIFIED,
+            new JdbcConnectionInfo(
+                    "jdbc:derby:memory:loomdbtest;create=true"
             )
     );
 
@@ -35,12 +42,16 @@ public enum TestedDb {
         }
     }
 
-    private final boolean requireKeepAlive;
+    private final DbKeepAliveStarter keepAliveStarter;
     private final TestDbAction dbAction;
     private final JdbcConnectionInfo connectionInfo;
 
-    TestedDb(boolean requireKeepAlive, TestDbAction dbAction, JdbcConnectionInfo connectionInfo) {
-        this.requireKeepAlive = requireKeepAlive;
+    TestedDb(
+            DbKeepAliveStarter keepAliveStarter,
+            TestDbAction dbAction,
+            JdbcConnectionInfo connectionInfo
+    ) {
+        this.keepAliveStarter = keepAliveStarter;
         this.dbAction = dbAction;
         this.connectionInfo = connectionInfo;
     }
@@ -49,8 +60,8 @@ public enum TestedDb {
         return TESTED_DB;
     }
 
-    public boolean requireKeepAlive() {
-        return requireKeepAlive;
+    public DbKeepAliveReference keepAliveDb() throws SQLException {
+        return keepAliveStarter.keepAliveDb(this);
     }
 
     public JdbcConnectionInfo connectionInfo() {
@@ -76,5 +87,34 @@ public enum TestedDb {
 
     public void testDbAction(Connection connection, Blackhole blackhole) throws SQLException {
         dbAction.run(connection, blackhole);
+    }
+
+    private static DbKeepAliveStarter javaDbKeepAlive() {
+        return db -> () -> {
+            try {
+                DriverManager
+                        .getConnection("jdbc:derby:memory:loomdbtest;drop=true")
+                        .close();
+            } catch (SQLException e) {
+                // Java DB responds with an exception on success
+                if (!e.getSQLState().equals("08006")) {
+                    throw e;
+                }
+                return;
+            }
+            throw new SQLException("Java DB did not shutdown as expected");
+        };
+    }
+
+    private static DbKeepAliveStarter connectionKeepAlive() {
+        return db -> db.newConnection()::close;
+    }
+
+    private static DbKeepAliveStarter noopKeepAlive() {
+        return db -> () -> { };
+    }
+
+    private interface DbKeepAliveStarter {
+        DbKeepAliveReference keepAliveDb(TestedDb db) throws SQLException;
     }
 }

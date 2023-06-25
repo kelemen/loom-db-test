@@ -9,6 +9,7 @@ The currently supported databases are (*DB_NAME* is in bold):
 - **H2**
 - **POSTGRES**: Postgres with the new virtual thread aware JDBC driver.
 - **POSTGRES.OLD**: Postgres with the old driver using synchronized blocks.
+- **JAVA_DB**: Java DB (Derby).
 
 You may set additional parameters for the benchmark by passing the `-Pbenchmark.<PARAMETER_NAME>=<PARAMETER_VALUE>`,
 the supporter parameter names are:

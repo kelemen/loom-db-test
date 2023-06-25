@@ -1,6 +1,5 @@
 package loomdbtest;
 
-import java.sql.Connection;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -62,7 +61,7 @@ public class DbPoolTest {
 
     private BenchmarkConnectionAction benchmarkConnectionAction;
     private ScopedDataSource dataSource;
-    private Connection keepAliveConnection;
+    private DbKeepAliveReference keepAliveReference;
     private ForkScope globalForkScope;
 
     private static int normalizePoolSize(int paramPoolSize) {
@@ -97,9 +96,7 @@ public class DbPoolTest {
         dataSource = dbPoolType.newDataSource(actualPoolSize);
 
         var testedDb = TestedDb.selectedTestedDb();
-        if (testedDb.requireKeepAlive()) {
-            keepAliveConnection = testedDb.newConnection();
-        }
+        keepAliveReference = testedDb.keepAliveDb();
 
         dataSource.withConnection(testedDb::initDb);
         preopenConnections(actualPoolSize, dataSource);
@@ -109,7 +106,7 @@ public class DbPoolTest {
 
     @TearDown
     public void tearDown() {
-        closeAll(globalForkScope, keepAliveConnection, dataSource);
+        closeAll(globalForkScope, keepAliveReference, dataSource);
     }
 
     private static void closeAll(AutoCloseable... resources) {
