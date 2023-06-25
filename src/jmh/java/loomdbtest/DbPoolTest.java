@@ -49,13 +49,13 @@ public class DbPoolTest {
     @Param
     private ForkType forkType;
 
-    @Param({"0", "50000000"})
+    @Param("0")
     private long cpuWork;
 
-    @Param({"0", "60"})
+    @Param("60")
     private long cpuSleepMs;
 
-    @Param("false")
+    @Param("true")
     private boolean fullConcurrentTasks;
 
     private BenchmarkConnectionAction benchmarkConnectionAction;
