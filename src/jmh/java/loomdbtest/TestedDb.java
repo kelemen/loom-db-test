@@ -3,6 +3,7 @@ package loomdbtest;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -11,6 +12,11 @@ public enum TestedDb {
             connectionKeepAlive(),
             TestDbAction.DEFAULT,
             new JdbcConnectionInfo("jdbc:h2:mem:dbpooltest")
+    ),
+    HSQL(
+            runCommandOnCloseKeepAlive("SHUTDOWN"),
+            TestDbAction.DEFAULT,
+            new JdbcConnectionInfo("jdbc:hsqldb:mem:dbpooltest")
     ),
     POSTGRES(
             noopKeepAlive(),
@@ -112,6 +118,20 @@ public enum TestedDb {
 
     private static DbKeepAliveStarter noopKeepAlive() {
         return db -> () -> { };
+    }
+
+    private static DbKeepAliveStarter runCommandOnCloseKeepAlive(String command) {
+        return db -> {
+            return () -> {
+                try (Connection connection = db.newConnection();
+                        Statement statement = connection.createStatement()
+                ) {
+                    if (statement.execute(command)) {
+                        statement.getResultSet().close();
+                    }
+                }
+            };
+        };
     }
 
     private interface DbKeepAliveStarter {

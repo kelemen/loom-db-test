@@ -7,6 +7,7 @@ This projects intends to test DB connection pooling and JDBC drivers with virtua
 The currently supported databases are (*DB_NAME* is in bold):
 
 - **H2**
+- **HSQL**
 - **POSTGRES**: Postgres with the new virtual thread aware JDBC driver.
 - **POSTGRES.OLD**: Postgres with the old driver using synchronized blocks.
 - **JAVA_DB**: Java DB (Derby).
