@@ -21,7 +21,7 @@ public enum TestedDb {
             )
     ),
     JAVA_DB(
-            javaDbKeepAlive(),
+            javaDbKeepAlive("loomdbtest"),
             TestDbAction.DEFAULT_SIMPLIFIED,
             new JdbcConnectionInfo(
                     "jdbc:derby:memory:loomdbtest;create=true"
@@ -89,11 +89,11 @@ public enum TestedDb {
         dbAction.run(connection, blackhole);
     }
 
-    private static DbKeepAliveStarter javaDbKeepAlive() {
+    private static DbKeepAliveStarter javaDbKeepAlive(String dbName) {
         return db -> () -> {
             try {
                 DriverManager
-                        .getConnection("jdbc:derby:memory:loomdbtest;drop=true")
+                        .getConnection("jdbc:derby:memory:" + dbName + ";drop=true")
                         .close();
             } catch (SQLException e) {
                 // Java DB responds with an exception on success
