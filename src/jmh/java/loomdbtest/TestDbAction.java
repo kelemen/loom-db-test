@@ -31,12 +31,24 @@ public enum TestDbAction {
             createDummyTable(connection);
             insertDummyValues(connection);
         }
+    },
+    PG_SLEEP {
+        @Override
+        public void run(Connection connection, Blackhole blackhole) throws SQLException {
+            runQuery(connection, blackhole, "SELECT pg_sleep(0.06)");
+        }
     };
 
-    public abstract void initDb(Connection connection) throws SQLException;
+    public void initDb(Connection connection) throws SQLException {
+
+    }
 
     public void run(Connection connection, Blackhole blackhole) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement("SELECT COL1 FROM LOOM_DB_TEST_TABLE");
+        runQuery(connection, blackhole, "SELECT COL1 FROM LOOM_DB_TEST_TABLE");
+    }
+
+    private static void runQuery(Connection connection, Blackhole blackhole, String query) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(query);
                 ResultSet rows = statement.executeQuery()
         ) {
             while (rows.next()) {

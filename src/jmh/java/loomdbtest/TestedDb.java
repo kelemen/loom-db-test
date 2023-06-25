@@ -20,7 +20,7 @@ public enum TestedDb {
     ),
     POSTGRES(
             noopKeepAlive(),
-            TestDbAction.DEFAULT,
+            TestDbAction.PG_SLEEP,
             new JdbcConnectionInfo(
                     "jdbc:postgresql://localhost:5432/loomdbtest",
                     new JdbcCredential("loomdbtest", "loomdbtest")
