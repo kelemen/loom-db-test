@@ -20,6 +20,9 @@ the supporter parameter names are:
   - PINNING_SLEEP: Sleeps for 60 ms, but pins the carrier thread while sleeping.
 - **dbPoolType**: The type of the connection pool. The possible values are:
   - DBCP2: Uses `BasicDataSource` of DBCP2.
+  - HIKARI: Uses `HikariDataSource` of HikariCP.
+  - C3P0: Uses `ComboPooledDataSource` of C3P0.
+  - VIBUR: Uses `ViburDBCPDataSource` of Vibur.
   - SEMAPHORE: Uses a semaphore to limit the number of connections.
 - **forkType**: The way to fork new tasks. The possible values are:
   - VIRTUAL_THREADS: Uses `Thread.startVirtualThread`.

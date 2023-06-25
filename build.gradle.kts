@@ -61,6 +61,9 @@ tasks.withType<JavaCompile>().configureEach {
 dependencies {
     implementation("org.jtrim2:jtrim-stream:2.0.6")
     implementation("org.apache.commons:commons-dbcp2:2.9.0")
+    implementation("com.zaxxer:HikariCP:5.0.1")
+    implementation("com.mchange:c3p0:0.9.5.5")
+    implementation("org.vibur:vibur-dbcp:25.0")
 
     when (selectedDb) {
         "H2" -> runtimeOnly("com.h2database:h2:2.1.214")
