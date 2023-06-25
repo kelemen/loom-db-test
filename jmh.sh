@@ -48,6 +48,7 @@ src_results_file="${script_dir}/build/results/jmh/results.txt"
 IFS=,
 
 for db_name in $(echo "${db_names}"); do
+  dest_file="${dest_dir}/${db_name}.results.txt"
   rm -f "${dest_file}"
 done
 
