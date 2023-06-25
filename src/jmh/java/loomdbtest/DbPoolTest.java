@@ -313,6 +313,7 @@ public class DbPoolTest {
                         throw new IllegalStateException("Lock queue is empty.");
                     }
                     try {
+                        blackhole.consume(lock);
                         synchronized (lock) {
                             Thread.sleep(60);
                         }
