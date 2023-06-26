@@ -50,7 +50,7 @@ public enum TestDbAction {
     }
 
     public void run(Connection connection, Blackhole blackhole) throws SQLException {
-        runQuery(connection, blackhole, "SELECT COL1 FROM LOOM_DB_TEST_TABLE");
+        runQuery(connection, blackhole, "SELECT COL1, RANDOM() AS R FROM LOOM_DB_TEST_TABLE");
     }
 
     private static void runQuery(Connection connection, Blackhole blackhole, String query) throws SQLException {
