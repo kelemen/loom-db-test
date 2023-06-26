@@ -73,6 +73,7 @@ dependencies {
     when (selectedDb) {
         "H2" -> runtimeOnly("com.h2database:h2:2.1.214")
         "H2.SLEEP" -> runtimeOnly("com.github.kelemen.mods.h2.sleep:h2:2.1.214")
+        "H2.NOSYNC", "H2.NOSYNC.SLEEP" -> runtimeOnly("com.github.kelemen.mods.h2.nosync:h2:2.1.214")
         "HSQL" -> runtimeOnly("org.hsqldb:hsqldb:2.7.2")
         "POSTGRES" -> runtimeOnly("org.postgresql:postgresql:42.6.0")
         "POSTGRES.OLD" -> runtimeOnly("org.postgresql:postgresql:42.4.3")

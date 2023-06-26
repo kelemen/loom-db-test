@@ -11,7 +11,7 @@ import org.openjdk.jmh.infra.Blackhole;
 public enum TestedDb {
     H2(
             connectionKeepAlive(),
-            "SLEEP".equals(selectedTestDbSubtype()) ? TestDbAction.SLEEP : TestDbAction.DEFAULT,
+            selectedTestDbSubtype().endsWith("SLEEP") ? TestDbAction.SLEEP : TestDbAction.DEFAULT,
             new JdbcConnectionInfo("jdbc:h2:mem:dbpooltest")
     ),
     HSQL(
