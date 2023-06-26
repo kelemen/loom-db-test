@@ -52,7 +52,7 @@ public class DbPoolTest {
     @Param("0")
     private long cpuWork;
 
-    @Param("60")
+    @Param("0")
     private long cpuSleepMs;
 
     @Param("true")
