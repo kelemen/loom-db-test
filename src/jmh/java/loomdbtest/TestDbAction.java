@@ -37,6 +37,12 @@ public enum TestDbAction {
         public void run(Connection connection, Blackhole blackhole) throws SQLException {
             runQuery(connection, blackhole, "SELECT pg_sleep(0.06)");
         }
+    },
+    SLEEP {
+        @Override
+        public void run(Connection connection, Blackhole blackhole) throws SQLException {
+            runQuery(connection, blackhole, "SELECT SLEEP(0.06)");
+        }
     };
 
     public void initDb(Connection connection) throws SQLException {

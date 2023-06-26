@@ -5,12 +5,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Locale;
 import org.openjdk.jmh.infra.Blackhole;
 
 public enum TestedDb {
     H2(
             connectionKeepAlive(),
-            TestDbAction.DEFAULT,
+            "SLEEP".equals(selectedTestDbSubtype()) ? TestDbAction.SLEEP : TestDbAction.DEFAULT,
             new JdbcConnectionInfo("jdbc:h2:mem:dbpooltest")
     ),
     HSQL(
@@ -60,6 +61,10 @@ public enum TestedDb {
         this.keepAliveStarter = keepAliveStarter;
         this.dbAction = dbAction;
         this.connectionInfo = connectionInfo;
+    }
+
+    private static String selectedTestDbSubtype() {
+        return System.getProperty("loomdbtest.testedDbSubtype", "").trim().toUpperCase(Locale.ROOT);
     }
 
     public static TestedDb selectedTestedDb() {

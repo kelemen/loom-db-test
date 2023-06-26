@@ -7,6 +7,7 @@ This projects intends to test DB connection pooling and JDBC drivers with virtua
 The currently supported databases are (*DB_NAME* is in bold):
 
 - **H2**
+- **H2.SLEEP**: H2 using a modified version of the driver supporting the SLEEP function (same as in MariaDB)
 - **HSQL**
 - **POSTGRES**: Postgres with the new virtual thread aware JDBC driver.
 - **POSTGRES.OLD**: Postgres with the old driver using synchronized blocks.
