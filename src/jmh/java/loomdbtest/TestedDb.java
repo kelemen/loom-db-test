@@ -34,6 +34,15 @@ public enum TestedDb {
                     new JdbcCredential("loomdbtest", "loomdbtest")
             )
     ),
+    MARIA(
+            noopKeepAlive(),
+            TestDbSetup.DEFAULT,
+            TestQuery.DEFAULT_SLEEP,
+            new JdbcConnectionInfo(
+                    "jdbc:mariadb://localhost:3306/loomdbtest",
+                    new JdbcCredential("loomdbtest", "loomdbtest")
+            )
+    ),
     JAVA_DB(
             javaDbKeepAlive("loomdbtest"),
             TestDbSetup.DEFAULT_SIMPLIFIED,

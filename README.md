@@ -12,9 +12,14 @@ The currently supported databases are (*DB_NAME* is in bold):
 - **H2.NOSYNC.SLEEP**: Same as *H2.NOSYNC*, but using `SELECT SLEEP(0.06)` as a `DO_QUERY` action.
 - **HSQL**
 - **HSQL.SLEEP**: A modified version of HSQLDB supporting the SLEEP function (same as in MariaDB).
+- **MARIA**: Maria DB.
 - **POSTGRES**: Postgres with the new virtual thread aware JDBC driver.
 - **POSTGRES.OLD**: Postgres with the old driver using synchronized blocks.
 - **JAVA_DB**: Java DB (Derby).
+
+Note: Databases that are not run within the JVM are assumed to run on the localhost having a user "loomdbtest" with
+password "loomdbtest", and full access to the "loomdbtest" database. Currently, these databases are the following:
+MariaDB and Postgres.
 
 You may set additional parameters for the benchmark by passing the `-Pbenchmark.<PARAMETER_NAME>=<PARAMETER_VALUE>`,
 the supporter parameter names are:
