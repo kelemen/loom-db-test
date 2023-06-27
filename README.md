@@ -48,7 +48,7 @@ the supporter parameter names are:
 
 If you want multiple values, then you can provide them as a comma separated list. For example:
 
-`./gradlew jmh -PtestedDb=POSTGRES -Pbenchmark.poolSize=1,2`
+`./gradlew jmh -PtestedDb=POSTGRES -Pbenchmark.forkType=VIRTUAL_THREADS,LIMITED_EXECUTOR`
 
 Even more conveniently: You can just run the provided `jmh.sh` script,
 but instead of writing `-Pbenchmark.<PARAMETER_NAME>=<PARAMETER_VALUE>`
@@ -56,4 +56,4 @@ you can just write `--<PARAMETER_NAME>=<PARAMETER_VALUE>`. Similarly for the `-P
 you can just write `--testedDb=<DB_NAME>`. Also, `jmh.sh` supports multiple comma separate values for
 the `testedDb` parameter (unlike the Gradle command). For example:
 
-`./jmh.sh --testedDb=POSTGRES,POSTGRES.OLD --poolSize=1,2`
+`./jmh.sh --testedDb=POSTGRES,POSTGRES.OLD --forkType=VIRTUAL_THREADS,LIMITED_EXECUTOR`

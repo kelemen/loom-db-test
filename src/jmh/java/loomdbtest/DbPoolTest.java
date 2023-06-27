@@ -40,13 +40,13 @@ public class DbPoolTest {
     @Param("*4")
     private String poolSize;
 
-    @Param
+    @Param("DO_QUERY")
     private ConnectionActionType connectionAction;
 
-    @Param
+    @Param("SEMAPHORE")
     private DbPoolType dbPoolType;
 
-    @Param
+    @Param("VIRTUAL_THREADS")
     private ForkType forkType;
 
     @Param("0")
