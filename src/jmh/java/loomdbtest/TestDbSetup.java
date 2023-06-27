@@ -30,14 +30,46 @@ public enum TestDbSetup {
             createDummyTable(connection);
             insertDummyValues(connection);
         }
+    },
+    DEFAULT_JAVA_DB {
+        @Override
+        public void initDb(Connection connection) throws SQLException {
+            DEFAULT_SIMPLIFIED.initDb(connection);
+            if (functionExists(connection, "SLEEP")) {
+                runDdl(connection, "DROP FUNCTION SLEEP");
+            }
+            runDdl(connection, """
+                    CREATE FUNCTION SLEEP(SECONDS DOUBLE) RETURNS INT
+                    PARAMETER STYLE JAVA NO SQL LANGUAGE JAVA
+                    EXTERNAL NAME""" + " '" + TestDbSetup.class.getName() + ".sleepSeconds'"
+            );
+        }
     };
 
     public abstract void initDb(Connection connection) throws SQLException;
+
+    public static Integer sleepSeconds(double seconds) {
+        try {
+            Thread.sleep(Math.round(seconds * 1000.0));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return null;
+    }
 
     private static boolean tableExists(Connection connection, String tableName) throws SQLException {
         try (ResultSet infoRows = connection
                 .getMetaData()
                 .getTables(null, connection.getSchema(), tableName, null)
+        ) {
+            return infoRows.next();
+        }
+    }
+
+    private static boolean functionExists(Connection connection, String tableName) throws SQLException {
+        try (ResultSet infoRows = connection
+                .getMetaData()
+                .getFunctions(null, connection.getSchema(), tableName)
         ) {
             return infoRows.next();
         }

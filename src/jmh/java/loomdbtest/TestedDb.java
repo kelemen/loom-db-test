@@ -45,8 +45,10 @@ public enum TestedDb {
     ),
     JAVA_DB(
             javaDbKeepAlive("loomdbtest"),
-            TestDbSetup.DEFAULT_SIMPLIFIED,
-            TestQuery.DEFAULT_QUERY,
+            TestDbSetup.DEFAULT_JAVA_DB,
+            selectedTestDbSubtype().endsWith("SLEEP")
+                    ? TestQuery.JAVA_DB_SLEEP
+                    : TestQuery.DEFAULT_QUERY,
             new JdbcConnectionInfo(
                     "jdbc:derby:memory:loomdbtest;create=true"
             )

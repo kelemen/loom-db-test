@@ -79,6 +79,6 @@ dependencies {
         "MARIA" -> runtimeOnly("org.mariadb.jdbc:mariadb-java-client:3.1.4")
         "POSTGRES" -> runtimeOnly("org.postgresql:postgresql:42.6.0")
         "POSTGRES.OLD" -> runtimeOnly("org.postgresql:postgresql:42.4.3")
-        "JAVA_DB" -> runtimeOnly("org.apache.derby:derby:10.16.1.1")
+        "JAVA_DB", "JAVA_DB.SLEEP" -> runtimeOnly("org.apache.derby:derby:10.16.1.1")
     }
 }
