@@ -12,23 +12,19 @@ public enum TestedDb {
     H2(
             connectionKeepAlive(),
             TestDbSetup.DEFAULT,
-            selectedTestDbSubtype().endsWith("SLEEP")
-                    ? TestQuery.DEFAULT_SLEEP
-                    : TestQuery.DEFAULT_QUERY,
+            selectQuery(TestQuery.DEFAULT_SLEEP, TestQuery.DEFAULT_QUERY),
             new JdbcConnectionInfo("jdbc:h2:mem:dbpooltest")
     ),
     HSQL(
             runCommandOnCloseKeepAlive("SHUTDOWN"),
             TestDbSetup.DEFAULT,
-            selectedTestDbSubtype().endsWith("SLEEP")
-                    ? TestQuery.HSQL_SLEEP
-                    : TestQuery.DEFAULT_QUERY2,
+            selectQuery(TestQuery.HSQL_SLEEP, TestQuery.DEFAULT_QUERY2),
             new JdbcConnectionInfo("jdbc:hsqldb:mem:dbpooltest")
     ),
     POSTGRES(
             noopKeepAlive(),
             TestDbSetup.DEFAULT,
-            TestQuery.PG_SLEEP,
+            selectQuery(TestQuery.PG_SLEEP, TestQuery.DEFAULT_QUERY),
             new JdbcConnectionInfo(
                     "jdbc:postgresql://localhost:5432/loomdbtest",
                     new JdbcCredential("loomdbtest", "loomdbtest")
@@ -37,7 +33,7 @@ public enum TestedDb {
     MARIA(
             noopKeepAlive(),
             TestDbSetup.DEFAULT,
-            TestQuery.DEFAULT_SLEEP,
+            selectQuery(TestQuery.DEFAULT_SLEEP, TestQuery.DEFAULT_QUERY2),
             new JdbcConnectionInfo(
                     "jdbc:mariadb://localhost:3306/loomdbtest",
                     new JdbcCredential("loomdbtest", "loomdbtest")
@@ -46,9 +42,7 @@ public enum TestedDb {
     DERBY(
             javaDbKeepAlive("loomdbtest"),
             TestDbSetup.DEFAULT_DERBY,
-            selectedTestDbSubtype().endsWith("SLEEP")
-                    ? TestQuery.DERBY_SLEEP
-                    : TestQuery.DEFAULT_QUERY,
+            selectQuery(TestQuery.DERBY_SLEEP, TestQuery.DEFAULT_QUERY),
             new JdbcConnectionInfo(
                     "jdbc:derby:memory:loomdbtest;create=true"
             )
@@ -56,9 +50,7 @@ public enum TestedDb {
     MSSQL(
             noopKeepAlive(),
             TestDbSetup.DEFAULT_MSSQL,
-            selectedTestDbSubtype().endsWith("SLEEP")
-                    ? TestQuery.MSSQL_SLEEP
-                    : TestQuery.DEFAULT_QUERY2,
+            selectQuery(TestQuery.MSSQL_SLEEP, TestQuery.DEFAULT_QUERY2),
             new JdbcConnectionInfo(
                     "jdbc:sqlserver://localhost:1433;encrypt=false;databaseName=loomdbtest;integratedSecurity=false;",
                     new JdbcCredential("loomdbtest", "loomdbtest")
@@ -98,6 +90,10 @@ public enum TestedDb {
 
     private static String selectedTestDbSubtype() {
         return System.getProperty("loomdbtest.testedDbSubtype", "").trim().toUpperCase(Locale.ROOT);
+    }
+
+    private static TestQuery selectQuery(TestQuery sleepQuery, TestQuery normalQuery) {
+        return selectedTestDbSubtype().endsWith("SLEEP") ? sleepQuery : normalQuery;
     }
 
     public static TestedDb selectedTestedDb() {

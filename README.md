@@ -7,20 +7,16 @@ This projects intends to test DB connection pooling and JDBC drivers with virtua
 The currently supported databases are (*DB_NAME* is in bold):
 
 - **H2**
-- **H2.SLEEP**: A modified version of H2 supporting the SLEEP function (same as in MariaDB).
 - **H2.NOSYNC**: A modified version of H2 where intrinsic locks were replaced with jucl locks.
-- **H2.NOSYNC.SLEEP**: Same as *H2.NOSYNC*, but using `SELECT SLEEP(0.06)` as a `DO_QUERY` action.
 - **HSQL**
-- **HSQL.SLEEP**: A modified version of HSQLDB supporting the SLEEP function (same as in MariaDB).
 - **MARIA**: Maria DB.
 - **POSTGRES**: Postgres with the new virtual thread aware JDBC driver.
 - **POSTGRES.OLD**: Postgres with the old driver using synchronized blocks.
 - **DERBY**: Derby aka. Java DB.
-- **DERBY.SLEEP**: Same as *DERBY*, but using `SELECT SLEEP(0.06) AS X FROM SYSIBM.SYSDUMMY1` as a `DO_QUERY`
-  action with a custom sleep function.
 - **MSSQL**
-- **MSSQL.SLEEP**: Same as *MSSQL*, but using `SELECT SLEEP('00:00:00.06') AS X` as a `DO_QUERY`
-  action with a custom sleep function.
+
+Optionally, all databases support a *.SLEEP* suffix where the *DO_QUERY* action just sleeps for 60 ms. For example,
+you use *POSTGRES.SLEEP* instead of *POSTGRES* as the *DB_NAME*.
 
 Note: Databases that are not run within the JVM are assumed to run on the localhost having a user "loomdbtest" with
 password "loomdbtest", and full access to the "loomdbtest" database. Currently, these databases are the following:

@@ -76,9 +76,9 @@ dependencies {
         "H2.NOSYNC", "H2.NOSYNC.SLEEP" -> runtimeOnly("com.github.kelemen.mods.h2.nosync:h2:2.1.214")
         "HSQL" -> runtimeOnly("org.hsqldb:hsqldb:2.7.2")
         "HSQL.SLEEP" -> runtimeOnly("com.github.kelemen.mods.hsqldb.sleep:hsqldb:2.7.2")
-        "MARIA" -> runtimeOnly("org.mariadb.jdbc:mariadb-java-client:3.1.4")
-        "POSTGRES" -> runtimeOnly("org.postgresql:postgresql:42.6.0")
-        "POSTGRES.OLD" -> runtimeOnly("org.postgresql:postgresql:42.4.3")
+        "MARIA", "MARIA.SLEEP" -> runtimeOnly("org.mariadb.jdbc:mariadb-java-client:3.1.4")
+        "POSTGRES", "POSTGRES.SLEEP" -> runtimeOnly("org.postgresql:postgresql:42.6.0")
+        "POSTGRES.OLD", "POSTGRES.OLD.SLEEP" -> runtimeOnly("org.postgresql:postgresql:42.4.3")
         "DERBY", "DERBY.SLEEP" -> runtimeOnly("org.apache.derby:derby:10.16.1.1")
         "MSSQL", "MSSQL.SLEEP" -> runtimeOnly("com.microsoft.sqlserver:mssql-jdbc:12.2.0.jre11")
     }
