@@ -29,6 +29,7 @@ the supporter parameter names are:
   It can also be "*X", and in this case the pool size is the number of threads times X.
 - **connectionAction**: The action to do with a connection retrieved from the pool. The possible values are:
   - DO_QUERY: Execute a simple query.
+  - DO_NOTHING: Does nothing with the connection.
   - SLEEP: Sleeps for 60 ms.
   - PINNING_SLEEP: Sleeps for 60 ms, but pins the carrier thread while sleeping.
 - **dbPoolType**: The type of the connection pool. The possible values are:

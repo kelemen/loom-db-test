@@ -295,6 +295,12 @@ public class DbPoolTest {
                 return TestedDb.selectedTestedDb()::testDbAction;
             }
         },
+        DO_NOTHING {
+            @Override
+            public BenchmarkConnectionAction createAction(int poolSize) {
+                return (connection, blackhole) -> blackhole.consume(connection);
+            }
+        },
         SLEEP {
             @Override
             public BenchmarkConnectionAction createAction(int poolSize) {
