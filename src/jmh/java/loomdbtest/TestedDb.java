@@ -11,17 +11,24 @@ import org.openjdk.jmh.infra.Blackhole;
 public enum TestedDb {
     H2(
             connectionKeepAlive(),
-            selectedTestDbSubtype().endsWith("SLEEP") ? TestDbAction.SLEEP : TestDbAction.DEFAULT,
+            TestDbSetup.DEFAULT,
+            selectedTestDbSubtype().endsWith("SLEEP")
+                    ? TestQuery.DEFAULT_SLEEP
+                    : TestQuery.DEFAULT_QUERY,
             new JdbcConnectionInfo("jdbc:h2:mem:dbpooltest")
     ),
     HSQL(
             runCommandOnCloseKeepAlive("SHUTDOWN"),
-            TestDbAction.DEFAULT,
+            TestDbSetup.DEFAULT,
+            selectedTestDbSubtype().endsWith("SLEEP")
+                    ? TestQuery.HSQL_SLEEP
+                    : TestQuery.HSQL_QUERY,
             new JdbcConnectionInfo("jdbc:hsqldb:mem:dbpooltest")
     ),
     POSTGRES(
             noopKeepAlive(),
-            TestDbAction.PG_SLEEP,
+            TestDbSetup.DEFAULT,
+            TestQuery.PG_SLEEP,
             new JdbcConnectionInfo(
                     "jdbc:postgresql://localhost:5432/loomdbtest",
                     new JdbcCredential("loomdbtest", "loomdbtest")
@@ -29,7 +36,8 @@ public enum TestedDb {
     ),
     JAVA_DB(
             javaDbKeepAlive("loomdbtest"),
-            TestDbAction.DEFAULT_SIMPLIFIED,
+            TestDbSetup.DEFAULT_SIMPLIFIED,
+            TestQuery.DEFAULT_QUERY,
             new JdbcConnectionInfo(
                     "jdbc:derby:memory:loomdbtest;create=true"
             )
@@ -50,16 +58,19 @@ public enum TestedDb {
     }
 
     private final DbKeepAliveStarter keepAliveStarter;
-    private final TestDbAction dbAction;
+    private final TestDbSetup testedDbSetup;
+    private final TestQuery query;
     private final JdbcConnectionInfo connectionInfo;
 
     TestedDb(
             DbKeepAliveStarter keepAliveStarter,
-            TestDbAction dbAction,
+            TestDbSetup testedDbSetup,
+            TestQuery query,
             JdbcConnectionInfo connectionInfo
     ) {
         this.keepAliveStarter = keepAliveStarter;
-        this.dbAction = dbAction;
+        this.testedDbSetup = testedDbSetup;
+        this.query = query;
         this.connectionInfo = connectionInfo;
     }
 
@@ -93,11 +104,11 @@ public enum TestedDb {
     }
 
     public void initDb(Connection connection) throws SQLException {
-        dbAction.initDb(connection);
+        testedDbSetup.initDb(connection);
     }
 
     public void testDbAction(Connection connection, Blackhole blackhole) throws SQLException {
-        dbAction.run(connection, blackhole);
+        query.runQuery(connection, blackhole);
     }
 
     private static DbKeepAliveStarter javaDbKeepAlive(String dbName) {

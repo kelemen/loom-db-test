@@ -4,9 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.openjdk.jmh.infra.Blackhole;
 
-public enum TestDbAction {
+public enum TestDbSetup {
     DEFAULT {
         @Override
         public void initDb(Connection connection) throws SQLException {
@@ -31,37 +30,9 @@ public enum TestDbAction {
             createDummyTable(connection);
             insertDummyValues(connection);
         }
-    },
-    PG_SLEEP {
-        @Override
-        public void run(Connection connection, Blackhole blackhole) throws SQLException {
-            runQuery(connection, blackhole, "SELECT pg_sleep(0.06)");
-        }
-    },
-    SLEEP {
-        @Override
-        public void run(Connection connection, Blackhole blackhole) throws SQLException {
-            runQuery(connection, blackhole, "SELECT SLEEP(0.06)");
-        }
     };
 
-    public void initDb(Connection connection) throws SQLException {
-
-    }
-
-    public void run(Connection connection, Blackhole blackhole) throws SQLException {
-        runQuery(connection, blackhole, "SELECT COL1, RANDOM() AS R FROM LOOM_DB_TEST_TABLE");
-    }
-
-    private static void runQuery(Connection connection, Blackhole blackhole, String query) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement(query);
-                ResultSet rows = statement.executeQuery()
-        ) {
-            while (rows.next()) {
-                blackhole.consume(rows);
-            }
-        }
-    }
+    public abstract void initDb(Connection connection) throws SQLException;
 
     private static boolean tableExists(Connection connection, String tableName) throws SQLException {
         try (ResultSet infoRows = connection
