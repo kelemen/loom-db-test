@@ -31,7 +31,7 @@ public enum TestDbSetup {
             insertDummyValues(connection);
         }
     },
-    DEFAULT_JAVA_DB {
+    DEFAULT_DERBY {
         @Override
         public void initDb(Connection connection) throws SQLException {
             DEFAULT_SIMPLIFIED.initDb(connection);

@@ -15,8 +15,8 @@ The currently supported databases are (*DB_NAME* is in bold):
 - **MARIA**: Maria DB.
 - **POSTGRES**: Postgres with the new virtual thread aware JDBC driver.
 - **POSTGRES.OLD**: Postgres with the old driver using synchronized blocks.
-- **JAVA_DB**: Java DB (Derby).
-- **JAVA_DB.SLEEP**: Same as *JAVA_DB*, but using `SELECT SLEEP(0.06) AS X FROM SYSIBM.SYSDUMMY1` as a `DO_QUERY`
+- **DERBY**: Derby aka. Java DB.
+- **DERBY.SLEEP**: Same as *DERBY*, but using `SELECT SLEEP(0.06) AS X FROM SYSIBM.SYSDUMMY1` as a `DO_QUERY`
   action with a custom sleep function.
 
 Note: Databases that are not run within the JVM are assumed to run on the localhost having a user "loomdbtest" with

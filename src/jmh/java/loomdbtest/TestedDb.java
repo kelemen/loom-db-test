@@ -43,11 +43,11 @@ public enum TestedDb {
                     new JdbcCredential("loomdbtest", "loomdbtest")
             )
     ),
-    JAVA_DB(
+    DERBY(
             javaDbKeepAlive("loomdbtest"),
-            TestDbSetup.DEFAULT_JAVA_DB,
+            TestDbSetup.DEFAULT_DERBY,
             selectedTestDbSubtype().endsWith("SLEEP")
-                    ? TestQuery.JAVA_DB_SLEEP
+                    ? TestQuery.DERBY_SLEEP
                     : TestQuery.DEFAULT_QUERY,
             new JdbcConnectionInfo(
                     "jdbc:derby:memory:loomdbtest;create=true"
