@@ -80,5 +80,6 @@ dependencies {
         "POSTGRES" -> runtimeOnly("org.postgresql:postgresql:42.6.0")
         "POSTGRES.OLD" -> runtimeOnly("org.postgresql:postgresql:42.4.3")
         "DERBY", "DERBY.SLEEP" -> runtimeOnly("org.apache.derby:derby:10.16.1.1")
+        "MSSQL", "MSSQL.SLEEP" -> runtimeOnly("com.microsoft.sqlserver:mssql-jdbc:12.2.0.jre11")
     }
 }

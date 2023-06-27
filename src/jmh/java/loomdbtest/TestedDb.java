@@ -22,7 +22,7 @@ public enum TestedDb {
             TestDbSetup.DEFAULT,
             selectedTestDbSubtype().endsWith("SLEEP")
                     ? TestQuery.HSQL_SLEEP
-                    : TestQuery.HSQL_QUERY,
+                    : TestQuery.DEFAULT_QUERY2,
             new JdbcConnectionInfo("jdbc:hsqldb:mem:dbpooltest")
     ),
     POSTGRES(
@@ -51,6 +51,17 @@ public enum TestedDb {
                     : TestQuery.DEFAULT_QUERY,
             new JdbcConnectionInfo(
                     "jdbc:derby:memory:loomdbtest;create=true"
+            )
+    ),
+    MSSQL(
+            noopKeepAlive(),
+            TestDbSetup.DEFAULT_MSSQL,
+            selectedTestDbSubtype().endsWith("SLEEP")
+                    ? TestQuery.MSSQL_SLEEP
+                    : TestQuery.DEFAULT_QUERY2,
+            new JdbcConnectionInfo(
+                    "jdbc:sqlserver://localhost:1433;encrypt=false;databaseName=loomdbtest;integratedSecurity=false;",
+                    new JdbcCredential("loomdbtest", "loomdbtest")
             )
     );
 

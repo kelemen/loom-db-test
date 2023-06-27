@@ -18,10 +18,13 @@ The currently supported databases are (*DB_NAME* is in bold):
 - **DERBY**: Derby aka. Java DB.
 - **DERBY.SLEEP**: Same as *DERBY*, but using `SELECT SLEEP(0.06) AS X FROM SYSIBM.SYSDUMMY1` as a `DO_QUERY`
   action with a custom sleep function.
+- **MSSQL**
+- **MSSQL.SLEEP**: Same as *MSSQL*, but using `SELECT SLEEP('00:00:00.06') AS X` as a `DO_QUERY`
+  action with a custom sleep function.
 
 Note: Databases that are not run within the JVM are assumed to run on the localhost having a user "loomdbtest" with
 password "loomdbtest", and full access to the "loomdbtest" database. Currently, these databases are the following:
-MariaDB and Postgres.
+MariaDB. Postgres and MsSQL.
 
 You may set additional parameters for the benchmark by passing the `-Pbenchmark.<PARAMETER_NAME>=<PARAMETER_VALUE>`,
 the supporter parameter names are:

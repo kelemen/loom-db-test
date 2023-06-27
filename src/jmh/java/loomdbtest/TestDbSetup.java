@@ -44,6 +44,24 @@ public enum TestDbSetup {
                     EXTERNAL NAME""" + " '" + TestDbSetup.class.getName() + ".sleepSeconds'"
             );
         }
+    },
+    DEFAULT_MSSQL {
+        @Override
+        public void initDb(Connection connection) throws SQLException {
+            DEFAULT_SIMPLIFIED.initDb(connection);
+            runDdl(connection, "DROP PROCEDURE IF EXISTS SLEEP");
+            runDdl(connection, """
+                    CREATE PROCEDURE SLEEP
+                    (
+                      @delaystr nvarchar(12)
+                    )
+                    AS BEGIN
+                      WAITFOR DELAY @delaystr;
+                      SELECT 1;
+                    END
+                    """
+            );
+        }
     };
 
     public abstract void initDb(Connection connection) throws SQLException;
