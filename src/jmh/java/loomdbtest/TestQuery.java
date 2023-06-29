@@ -13,7 +13,15 @@ public enum TestQuery {
     DERBY_SLEEP("SELECT SLEEP(0.06) AS X FROM SYSIBM.SYSDUMMY1"),
     HSQL_SLEEP("SELECT SLEEP(0.06) AS X FROM INFORMATION_SCHEMA.SYSTEM_USERS"),
     MSSQL_SLEEP("{call dbo.SLEEP('00:00:00.06')}"),
-    PG_SLEEP("SELECT pg_sleep(0.06)");
+    PG_SLEEP("SELECT pg_sleep(0.06)"),
+    INSERT_DELETE("") {
+        @Override
+        public void runQuery(Connection connection, Blackhole blackhole) throws SQLException {
+            String element = "X" + Thread.currentThread().threadId();
+            execute(connection, "INSERT INTO LOOM_DB_TEST_TABLE (COL1) VALUES ('" + element +"')");
+            execute(connection, "DELETE FROM LOOM_DB_TEST_TABLE WHERE COL1 = '" + element + "'");
+        }
+    };;
 
     private final String query;
 
@@ -28,6 +36,12 @@ public enum TestQuery {
             while (rows.next()) {
                 blackhole.consume(rows);
             }
+        }
+    }
+
+    private static void execute(Connection connection, String ddl) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(ddl)) {
+            statement.execute();
         }
     }
 }

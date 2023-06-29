@@ -96,7 +96,7 @@ public enum TestDbSetup {
     private static void createDummyTable(Connection connection) throws SQLException {
         runDdl(connection, """
                 CREATE TABLE LOOM_DB_TEST_TABLE (
-                    COL1 VARCHAR(1) NOT NULL
+                    COL1 VARCHAR(64) NOT NULL
                 )
                 """
         );

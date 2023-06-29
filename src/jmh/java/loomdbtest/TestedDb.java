@@ -12,13 +12,13 @@ public enum TestedDb {
     H2(
             connectionKeepAlive(),
             TestDbSetup.DEFAULT,
-            selectQuery(TestQuery.DEFAULT_SLEEP, TestQuery.DEFAULT_QUERY),
+            selectQuery(TestQuery.DEFAULT_SLEEP, TestQuery.INSERT_DELETE),
             new JdbcConnectionInfo("jdbc:h2:mem:dbpooltest")
     ),
     HSQL(
             runCommandOnCloseKeepAlive("SHUTDOWN"),
             TestDbSetup.DEFAULT,
-            selectQuery(TestQuery.HSQL_SLEEP, TestQuery.DEFAULT_QUERY2),
+            selectQuery(TestQuery.HSQL_SLEEP, TestQuery.INSERT_DELETE),
             new JdbcConnectionInfo("jdbc:hsqldb:mem:dbpooltest")
     ),
     POSTGRES(
