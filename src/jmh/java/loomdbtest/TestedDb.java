@@ -12,19 +12,19 @@ public enum TestedDb {
     H2(
             connectionKeepAlive(),
             TestDbSetup.DEFAULT,
-            selectQuery(TestQuery.DEFAULT_SLEEP, TestQuery.INSERT_DELETE),
+            selectQuery(BuiltInBenchmarkConnectionAction.DEFAULT_SLEEP, BuiltInBenchmarkConnectionAction.INSERT_DELETE),
             new JdbcConnectionInfo("jdbc:h2:mem:dbpooltest")
     ),
     HSQL(
             runCommandOnCloseKeepAlive("SHUTDOWN"),
             TestDbSetup.DEFAULT,
-            selectQuery(TestQuery.HSQL_SLEEP, TestQuery.INSERT_DELETE),
+            selectQuery(BuiltInBenchmarkConnectionAction.HSQL_SLEEP, BuiltInBenchmarkConnectionAction.INSERT_DELETE),
             new JdbcConnectionInfo("jdbc:hsqldb:mem:dbpooltest")
     ),
     POSTGRES(
             noopKeepAlive(),
             TestDbSetup.DEFAULT,
-            selectQuery(TestQuery.PG_SLEEP, TestQuery.DEFAULT_QUERY),
+            selectQuery(BuiltInBenchmarkConnectionAction.PG_SLEEP, BuiltInBenchmarkConnectionAction.DEFAULT_QUERY),
             new JdbcConnectionInfo(
                     "jdbc:postgresql://localhost:5432/loomdbtest",
                     new JdbcCredential("loomdbtest", "loomdbtest")
@@ -33,7 +33,7 @@ public enum TestedDb {
     MARIA(
             noopKeepAlive(),
             TestDbSetup.DEFAULT,
-            selectQuery(TestQuery.DEFAULT_SLEEP, TestQuery.DEFAULT_QUERY2),
+            selectQuery(BuiltInBenchmarkConnectionAction.DEFAULT_SLEEP, BuiltInBenchmarkConnectionAction.DEFAULT_QUERY2),
             new JdbcConnectionInfo(
                     "jdbc:mariadb://localhost:3306/loomdbtest",
                     new JdbcCredential("loomdbtest", "loomdbtest")
@@ -42,7 +42,7 @@ public enum TestedDb {
     DERBY(
             javaDbKeepAlive("loomdbtest"),
             TestDbSetup.DEFAULT_DERBY,
-            selectQuery(TestQuery.DERBY_SLEEP, TestQuery.DEFAULT_QUERY),
+            selectQuery(BuiltInBenchmarkConnectionAction.DERBY_SLEEP, BuiltInBenchmarkConnectionAction.DEFAULT_QUERY),
             new JdbcConnectionInfo(
                     "jdbc:derby:memory:loomdbtest;create=true"
             )
@@ -50,7 +50,7 @@ public enum TestedDb {
     MSSQL(
             noopKeepAlive(),
             TestDbSetup.DEFAULT_MSSQL,
-            selectQuery(TestQuery.MSSQL_SLEEP, TestQuery.DEFAULT_QUERY2),
+            selectQuery(BuiltInBenchmarkConnectionAction.MSSQL_SLEEP, BuiltInBenchmarkConnectionAction.DEFAULT_QUERY2),
             new JdbcConnectionInfo(
                     "jdbc:sqlserver://localhost:1433;encrypt=false;databaseName=loomdbtest;integratedSecurity=false;",
                     new JdbcCredential("loomdbtest", "loomdbtest")
@@ -73,13 +73,13 @@ public enum TestedDb {
 
     private final DbKeepAliveStarter keepAliveStarter;
     private final TestDbSetup testedDbSetup;
-    private final TestQuery query;
+    private final BuiltInBenchmarkConnectionAction query;
     private final JdbcConnectionInfo connectionInfo;
 
     TestedDb(
             DbKeepAliveStarter keepAliveStarter,
             TestDbSetup testedDbSetup,
-            TestQuery query,
+            BuiltInBenchmarkConnectionAction query,
             JdbcConnectionInfo connectionInfo
     ) {
         this.keepAliveStarter = keepAliveStarter;
@@ -92,7 +92,7 @@ public enum TestedDb {
         return System.getProperty("loomdbtest.testedDbSubtype", "").trim().toUpperCase(Locale.ROOT);
     }
 
-    private static TestQuery selectQuery(TestQuery sleepQuery, TestQuery normalQuery) {
+    private static BuiltInBenchmarkConnectionAction selectQuery(BuiltInBenchmarkConnectionAction sleepQuery, BuiltInBenchmarkConnectionAction normalQuery) {
         return selectedTestDbSubtype().endsWith("SLEEP") ? sleepQuery : normalQuery;
     }
 
@@ -125,8 +125,8 @@ public enum TestedDb {
         testedDbSetup.initDb(connection);
     }
 
-    public void testDbAction(Connection connection, Blackhole blackhole) throws SQLException {
-        query.runQuery(connection, blackhole);
+    public void testDbAction(Connection connection, Blackhole blackhole) throws Exception {
+        query.run(connection, blackhole);
     }
 
     private static DbKeepAliveStarter javaDbKeepAlive(String dbName) {
