@@ -14,6 +14,10 @@ public enum BuiltInBenchmarkConnectionAction implements BenchmarkConnectionActio
     HSQL_SLEEP("SELECT SLEEP(0.06) AS X FROM INFORMATION_SCHEMA.SYSTEM_USERS"),
     MSSQL_SLEEP("{call dbo.SLEEP('00:00:00.06')}"),
     PG_SLEEP("SELECT pg_sleep(0.06)"),
+    ORACLE_SLEEP((connection, blackhole) -> {
+        execute(connection, "{call DBMS_SESSION.SLEEP(0.06)}");
+    }),
+    ORACLE_QUERY("SELECT COL1,dbms_random.value() AS R FROM LOOM_DB_TEST_TABLE"),
     INSERT_DELETE("") {
         @Override
         public void run(Connection connection, Blackhole blackhole) throws SQLException {

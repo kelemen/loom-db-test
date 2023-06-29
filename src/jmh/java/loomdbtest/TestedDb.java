@@ -55,6 +55,15 @@ public enum TestedDb {
                     "jdbc:sqlserver://localhost:1433;encrypt=false;databaseName=loomdbtest;integratedSecurity=false;",
                     new JdbcCredential("loomdbtest", "loomdbtest")
             )
+    ),
+    ORACLE(
+            noopKeepAlive(),
+            TestDbSetup.DEFAULT_ORACLE,
+            selectQuery(BuiltInBenchmarkConnectionAction.ORACLE_SLEEP, BuiltInBenchmarkConnectionAction.DEFAULT_QUERY2),
+            new JdbcConnectionInfo(
+                    "jdbc:oracle:thin:@localhost:1521/loomdbtest",
+                    new JdbcCredential("loomdbtest", "loomdbtest")
+            )
     );
 
     private static final TestedDb TESTED_DB;

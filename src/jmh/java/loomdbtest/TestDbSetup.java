@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 public enum TestDbSetup {
     DEFAULT {
@@ -29,6 +30,22 @@ public enum TestDbSetup {
 
             createDummyTable(connection);
             insertDummyValues(connection);
+        }
+    },
+    DEFAULT_ORACLE {
+        @Override
+        public void initDb(Connection connection) throws SQLException {
+            if (tableExists(connection, "LOOM_DB_TEST_TABLE")) {
+                runDdl(connection, """
+                    DROP TABLE LOOM_DB_TEST_TABLE
+                    """
+                );
+            }
+
+            createDummyTable(connection);
+            for (String value : List.of("A", "B", "C")) {
+                runDdl(connection, " INSERT INTO LOOM_DB_TEST_TABLE (COL1) VALUES ('" + value + "')");
+            }
         }
     },
     DEFAULT_DERBY {

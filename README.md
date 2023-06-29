@@ -14,6 +14,7 @@ The currently supported databases are (*DB_NAME* is in bold):
 - **POSTGRES.OLD**: Postgres with the old driver using synchronized blocks.
 - **DERBY**: Derby aka. Java DB.
 - **MSSQL**
+- **ORACLE**
 
 Optionally, all databases support a *.SLEEP* suffix where the *DO_QUERY* action just sleeps for 60 ms. For example,
 you use *POSTGRES.SLEEP* instead of *POSTGRES* as the *DB_NAME*.
