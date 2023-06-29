@@ -11,7 +11,6 @@ java {
 
 val enableLoomJvmArgs = listOf(
         "--enable-preview",
-        "--add-modules=jdk.incubator.concurrent"
 )
 
 tasks.jmhRunBytecodeGenerator.configure {
