@@ -1,68 +1,57 @@
 package loomdbtest;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
-import org.openjdk.jmh.infra.Blackhole;
 
 public enum TestedDb {
     H2(
             connectionKeepAlive(),
-            TestDbSetup.DEFAULT,
-            selectQuery(BuiltInBenchmarkConnectionAction.DEFAULT_SLEEP, BuiltInBenchmarkConnectionAction.INSERT_DELETE),
             new JdbcConnectionInfo("jdbc:h2:mem:dbpooltest")
     ),
     HSQL(
             runCommandOnCloseKeepAlive("SHUTDOWN"),
-            TestDbSetup.DEFAULT,
-            selectQuery(BuiltInBenchmarkConnectionAction.HSQL_SLEEP, BuiltInBenchmarkConnectionAction.INSERT_DELETE),
             new JdbcConnectionInfo("jdbc:hsqldb:mem:dbpooltest")
     ),
     POSTGRES(
             noopKeepAlive(),
-            TestDbSetup.DEFAULT,
-            selectQuery(BuiltInBenchmarkConnectionAction.PG_SLEEP, BuiltInBenchmarkConnectionAction.DEFAULT_QUERY),
             new JdbcConnectionInfo(
                     "jdbc:postgresql://localhost:5432/loomdbtest",
-                    new JdbcCredential("loomdbtest", "loomdbtest")
+                    JdbcCredential.DEFAULT
             )
     ),
     MARIA(
             noopKeepAlive(),
-            TestDbSetup.DEFAULT,
-            selectQuery(BuiltInBenchmarkConnectionAction.DEFAULT_SLEEP, BuiltInBenchmarkConnectionAction.DEFAULT_QUERY2),
             new JdbcConnectionInfo(
                     "jdbc:mariadb://localhost:3306/loomdbtest",
-                    new JdbcCredential("loomdbtest", "loomdbtest")
+                    JdbcCredential.DEFAULT
             )
     ),
     DERBY(
             javaDbKeepAlive("loomdbtest"),
-            TestDbSetup.DEFAULT_DERBY,
-            selectQuery(BuiltInBenchmarkConnectionAction.DERBY_SLEEP, BuiltInBenchmarkConnectionAction.DEFAULT_QUERY),
             new JdbcConnectionInfo(
                     "jdbc:derby:memory:loomdbtest;create=true"
             )
     ),
     MSSQL(
             noopKeepAlive(),
-            TestDbSetup.DEFAULT_MSSQL,
-            selectQuery(BuiltInBenchmarkConnectionAction.MSSQL_SLEEP, BuiltInBenchmarkConnectionAction.DEFAULT_QUERY2),
             new JdbcConnectionInfo(
                     "jdbc:sqlserver://localhost:1433;encrypt=false;databaseName=loomdbtest;integratedSecurity=false;",
-                    new JdbcCredential("loomdbtest", "loomdbtest")
+                    JdbcCredential.DEFAULT
             )
     ),
     ORACLE(
             noopKeepAlive(),
-            TestDbSetup.DEFAULT_ORACLE,
-            selectQuery(BuiltInBenchmarkConnectionAction.ORACLE_SLEEP, BuiltInBenchmarkConnectionAction.DEFAULT_QUERY2),
             new JdbcConnectionInfo(
                     "jdbc:oracle:thin:@localhost:1521/loomdbtest",
-                    new JdbcCredential("loomdbtest", "loomdbtest")
+                    JdbcCredential.DEFAULT
             )
     );
 
@@ -81,28 +70,18 @@ public enum TestedDb {
     }
 
     private final DbKeepAliveStarter keepAliveStarter;
-    private final TestDbSetup testedDbSetup;
-    private final BuiltInBenchmarkConnectionAction query;
     private final JdbcConnectionInfo connectionInfo;
 
     TestedDb(
             DbKeepAliveStarter keepAliveStarter,
-            TestDbSetup testedDbSetup,
-            BuiltInBenchmarkConnectionAction query,
             JdbcConnectionInfo connectionInfo
     ) {
         this.keepAliveStarter = keepAliveStarter;
-        this.testedDbSetup = testedDbSetup;
-        this.query = query;
         this.connectionInfo = connectionInfo;
     }
 
     private static String selectedTestDbSubtype() {
         return System.getProperty("loomdbtest.testedDbSubtype", "").trim().toUpperCase(Locale.ROOT);
-    }
-
-    private static BuiltInBenchmarkConnectionAction selectQuery(BuiltInBenchmarkConnectionAction sleepQuery, BuiltInBenchmarkConnectionAction normalQuery) {
-        return selectedTestDbSubtype().endsWith("SLEEP") ? sleepQuery : normalQuery;
     }
 
     public static TestedDb selectedTestedDb() {
@@ -130,12 +109,90 @@ public enum TestedDb {
         }
     }
 
-    public void initDb(Connection connection) throws SQLException {
-        testedDbSetup.initDb(connection);
+    public BenchmarkConnectionAction initDb(Connection connection) throws SQLException {
+        String dbName = name().toLowerCase(Locale.ROOT);
+        boolean sleep = selectedTestDbSubtype().endsWith("SLEEP");
+
+        List<String> initScripts;
+        List<String> benchmarkScripts;
+        try {
+            initScripts = SqlScriptUtils.loadSqlScriptStatements(
+                    new SqlScriptParameters(connection, sleep),
+                    dbName,
+                    "init"
+            );
+            printStatements("Init Statements", initScripts);
+
+            benchmarkScripts = SqlScriptUtils.loadSqlScriptStatements(
+                    new SqlScriptParameters(connection, sleep),
+                    dbName,
+                    "benchmark"
+            );
+            printStatements("Benchmark Statements", benchmarkScripts);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
+        executeStatements(connection, initScripts);
+        return toBenchmarkAction(benchmarkScripts);
     }
 
-    public void testDbAction(Connection connection, Blackhole blackhole) throws Exception {
-        query.run(connection, blackhole);
+    private static void printStatements(String caption, List<String> statements) {
+        System.out.println();
+        System.out.println("## " + caption);
+        statements.forEach(statement -> {
+            System.out.println("<statement>");
+            System.out.println(statement.trim());
+            System.out.println("</statement>");
+        });
+    }
+
+    private static BenchmarkConnectionAction toBenchmarkAction(
+            List<String> actionScripts
+    ) {
+        return (connection, blackhole) -> {
+            executeStatements(connection, actionScripts, resultSet -> {
+                while (resultSet.next()) {
+                    blackhole.consume(resultSet);
+                }
+            });
+        };
+    }
+
+    private static void executeStatements(
+            Connection connection,
+            List<String> statements
+    ) throws SQLException {
+        executeStatements(connection, statements, resultSet -> { });
+    }
+
+    private static void executeStatements(
+            Connection connection,
+            List<String> statements,
+            ResultSetAction resultSetAction
+    ) throws SQLException {
+        String actionId = "X" + Thread.currentThread().threadId();
+        for (String statement : statements) {
+            executeStatement(
+                    connection,
+                    statement.replace("@ACTION_ID@", actionId),
+                    resultSetAction)
+            ;
+        }
+    }
+
+    private static void executeStatement(
+            Connection connection,
+            String statementStr,
+            ResultSetAction resultSetAction
+    ) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            if (statement.execute(statementStr)) {
+                try (ResultSet rows = statement.getResultSet()) {
+                    resultSetAction.processResultSet(rows);
+                }
+            }
+        }
     }
 
     private static DbKeepAliveStarter javaDbKeepAlive(String dbName) {
@@ -175,6 +232,10 @@ public enum TestedDb {
                 }
             };
         };
+    }
+
+    private interface ResultSetAction {
+        void processResultSet(ResultSet resultSet) throws SQLException;
     }
 
     private interface DbKeepAliveStarter {

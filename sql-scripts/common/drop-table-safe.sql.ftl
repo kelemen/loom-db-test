@@ -1,0 +1,3 @@
+[#if db.hasTable("LOOM_DB_TEST_TABLE")]
+DROP TABLE LOOM_DB_TEST_TABLE
+[/#if]

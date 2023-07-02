@@ -30,7 +30,7 @@ the supporter parameter names are:
 - **poolSize**: The size of the connection pool. If non-positive, then it is relative to the number of threads.
   It can also be "*X", and in this case the pool size is the number of threads times X.
 - **connectionAction**: The action to do with a connection retrieved from the pool. The possible values are:
-  - DO_QUERY: Execute a simple query.
+  - EXECUTE_SCRIPT: Execute the benchmark.sql(.ftl) in the *sql-scripts* directory.
   - DO_NOTHING: Does nothing with the connection.
   - SLEEP: Sleeps for 60 ms.
   - PINNING_SLEEP: Sleeps for 60 ms, but pins the carrier thread while sleeping.
@@ -60,3 +60,12 @@ you can just write `--testedDb=<DB_NAME>`. Also, `jmh.sh` supports multiple comm
 the `testedDb` parameter (unlike the Gradle command). For example:
 
 `./jmh.sh --testedDb=POSTGRES,POSTGRES.OLD --forkType=VIRTUAL_THREADS,LIMITED_EXECUTOR`
+
+### Custom scripts
+
+The scripts run by the benchmark are in the *sql-scripts* directory. If you want to run a custom script,
+you can either overwrite them, or pass the `-Ploomdbtest.sqlScriptDir=<REL_PATH>` parameter to the build
+to replace its default value (which is "sql-scripts*). When calling `jmh.sh`, then the parameter is
+`--sqlScriptDir=<REL_PATH>`.
+
+The script files are processed by Freemarker. See the examples for the parameters available to the template.

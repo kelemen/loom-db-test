@@ -92,10 +92,10 @@ public enum DbPoolType {
             var dataSource = new FixedDataSource(poolSize, TestedDb.selectedTestedDb()::newConnection);
             return new ScopedDataSource() {
                 @Override
-                public void withConnection(ConnectionAction action) throws Exception {
+                public <V> V withConnectionAndGet(ConnectionFunction<V> function) throws Exception {
                     dbLimiter.acquire();
                     try (Connection connection = dataSource.getConnection()) {
-                        action.run(connection);
+                        return function.run(connection);
                     } finally {
                         dbLimiter.release();
                     }
@@ -119,7 +119,7 @@ public enum DbPoolType {
         return fromDataSource(dataSource, dataSource);
     }
 
-    private static <T extends DataSource & AutoCloseable> ScopedDataSource fromDataSource(
+    private static ScopedDataSource fromDataSource(
             DataSource dataSource,
             AutoCloseable closeMethod
     ) {
@@ -128,9 +128,9 @@ public enum DbPoolType {
 
         return new ScopedDataSource() {
             @Override
-            public void withConnection(ConnectionAction action) throws Exception {
+            public <V> V withConnectionAndGet(ConnectionFunction<V> function) throws Exception {
                 try (Connection connection = dataSource.getConnection()) {
-                    action.run(connection);
+                    return function.run(connection);
                 }
             }
 

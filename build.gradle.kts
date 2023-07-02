@@ -29,9 +29,15 @@ jmh {
             ?.let { selectedDb.substring(0, it) to selectedDb.substring(it + 1) }
             ?: (selectedDb to "")
 
+    val relSqlScriptDir = providers
+            .gradleProperty("loomdbtest.sqlScriptDir")
+            .getOrElse("sql-scripts")
+    val sqlScriptDir = rootDir.resolve(relSqlScriptDir)
+
     val extraJvmArgs = listOf(
             "-Dloomdbtest.testedDb=${parsedSelectedDb.first}",
             "-Dloomdbtest.testedDbSubtype=${parsedSelectedDb.second}",
+            "-Dloomdbtest.sqlScriptDir=${sqlScriptDir}",
     )
     jvmArgsAppend.set(extraJvmArgs + enableLoomJvmArgs)
 
@@ -68,6 +74,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("com.mchange:c3p0:0.9.5.5")
     implementation("org.vibur:vibur-dbcp:25.0")
+    implementation("org.freemarker:freemarker:2.3.32")
 
     when (selectedDb) {
         "H2" -> runtimeOnly("com.h2database:h2:2.1.214")

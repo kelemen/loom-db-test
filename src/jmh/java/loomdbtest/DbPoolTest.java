@@ -40,7 +40,7 @@ public class DbPoolTest {
     @Param("*4")
     private String poolSize;
 
-    @Param("DO_QUERY")
+    @Param("EXECUTE_SCRIPT")
     private ConnectionActionType connectionAction;
 
     @Param("SEMAPHORE")
@@ -96,13 +96,15 @@ public class DbPoolTest {
     @Setup
     public void setup() throws Exception {
         int actualPoolSize = normalizePoolSize(poolSize);
-        benchmarkConnectionAction = connectionAction.createAction(actualPoolSize);
         dataSource = dbPoolType.newDataSource(actualPoolSize);
 
         var testedDb = TestedDb.selectedTestedDb();
         keepAliveReference = testedDb.keepAliveDb();
 
-        dataSource.withConnection(testedDb::initDb);
+        benchmarkConnectionAction = connectionAction.createAction(
+                actualPoolSize,
+                dataSource.withConnectionAndGet(testedDb::initDb)
+        );
         preopenConnections(actualPoolSize, dataSource);
 
         globalForkScope = exceptionTracker(forkType.newForkScope());
@@ -289,27 +291,27 @@ public class DbPoolTest {
     }
 
     public enum ConnectionActionType {
-        DO_QUERY {
+        EXECUTE_SCRIPT {
             @Override
-            public BenchmarkConnectionAction createAction(int poolSize) {
-                return TestedDb.selectedTestedDb()::testDbAction;
+            public BenchmarkConnectionAction createAction(int poolSize, BenchmarkConnectionAction executeScriptAction) {
+                return executeScriptAction;
             }
         },
         DO_NOTHING {
             @Override
-            public BenchmarkConnectionAction createAction(int poolSize) {
+            public BenchmarkConnectionAction createAction(int poolSize, BenchmarkConnectionAction executeScriptAction) {
                 return (connection, blackhole) -> blackhole.consume(connection);
             }
         },
         SLEEP {
             @Override
-            public BenchmarkConnectionAction createAction(int poolSize) {
+            public BenchmarkConnectionAction createAction(int poolSize, BenchmarkConnectionAction executeScriptAction) {
                 return (connection, blackhole) -> Thread.sleep(60);
             }
         },
         PINNING_SLEEP {
             @Override
-            public BenchmarkConnectionAction createAction(int poolSize) {
+            public BenchmarkConnectionAction createAction(int poolSize, BenchmarkConnectionAction executeScriptAction) {
                 var lockQueue = new ArrayBlockingQueue<>(poolSize);
                 for (int i = 0; i < poolSize; i++) {
                     lockQueue.add(new Object());
@@ -331,7 +333,7 @@ public class DbPoolTest {
             }
         };
 
-        public abstract BenchmarkConnectionAction createAction(int poolSize);
+        public abstract BenchmarkConnectionAction createAction(int poolSize, BenchmarkConnectionAction executeScriptAction);
     }
 
     public enum ForkType {

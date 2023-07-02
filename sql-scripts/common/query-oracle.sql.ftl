@@ -1,0 +1,1 @@
+SELECT COL1, dbms_random.value() AS R FROM LOOM_DB_TEST_TABLE

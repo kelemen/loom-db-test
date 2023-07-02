@@ -10,4 +10,6 @@ public record JdbcCredential(
         Objects.requireNonNull(username, "username");
         Objects.requireNonNull(password, "password");
     }
+
+    public static JdbcCredential DEFAULT = new JdbcCredential("loomdbtest", "loomdbtest");
 }

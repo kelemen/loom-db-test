@@ -9,7 +9,7 @@ jmh_benchmark_args=()
 
 while [[ $# > 0 ]] ; do
   case "$1" in
-    --@(testedDb|poolSize|connectionAction|dbPoolType|forkType|cpuWork|cpuSleepMs|fullConcurrentTasks)?(=*))
+    --@(sqlScriptDir|testedDb|poolSize|connectionAction|dbPoolType|forkType|cpuWork|cpuSleepMs|fullConcurrentTasks)?(=*))
       param_key_name="${1#--}"
       if [[ ${param_key_name} =~ .*=.* ]]; then
         param_value="${param_key_name#*=}"
@@ -21,6 +21,8 @@ while [[ $# > 0 ]] ; do
 
       if [[ ${param_key_name} = testedDb ]]; then
         db_names="${db_names+${db_names}.}${param_value}"
+      elif [[ ${param_key_name} = sqlScriptDir ]]; then
+        jmh_benchmark_args+=("-Ploomdbtest.sqlScriptDir=${param_value}")
       else
         jmh_benchmark_args+=("-Pbenchmark.${param_key_name}=${param_value}")
       fi

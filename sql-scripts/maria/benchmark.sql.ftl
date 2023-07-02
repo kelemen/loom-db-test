@@ -1,0 +1,5 @@
+[#if sleep]
+[#include "/common/sleep.sql.ftl"]
+[#else]
+[#include "/common/query2.sql.ftl"]
+[/#if]
