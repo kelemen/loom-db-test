@@ -17,7 +17,7 @@ The currently supported databases are (*DB_NAME* is in bold):
 - **ORACLE**
 - **ORACLE.OLD**: Oracle with the old driver using synchronized blocks.
 
-Optionally, all databases support a *.SLEEP* suffix where the *DO_QUERY* action just sleeps for 60 ms. For example,
+Optionally, all databases support a *.SLEEP* suffix where the *EXECUTE_SCRIPT* action just sleeps for 60 ms. For example,
 you use *POSTGRES.SLEEP* instead of *POSTGRES* as the *DB_NAME*.
 
 Note: Databases that are not run within the JVM are assumed to run on the localhost having a user "loomdbtest" with
