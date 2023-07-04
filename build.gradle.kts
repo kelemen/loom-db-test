@@ -5,7 +5,11 @@ plugins {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(20))
+        languageVersion.set(providers
+                .gradleProperty("loomdbtest.javaVersion")
+                .map(JavaLanguageVersion::of)
+                .orElse(JavaLanguageVersion.of(20))
+        )
     }
 }
 
