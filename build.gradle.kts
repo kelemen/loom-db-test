@@ -81,9 +81,10 @@ dependencies {
     implementation("org.freemarker:freemarker:2.3.32")
 
     when (selectedDb) {
-        "H2" -> runtimeOnly("com.h2database:h2:2.1.214")
-        "H2.SLEEP" -> runtimeOnly("com.github.kelemen.mods.h2.sleep:h2:2.1.214")
-        "H2.NOSYNC", "H2.NOSYNC.SLEEP" -> runtimeOnly("com.github.kelemen.mods.h2.nosync:h2:2.1.214")
+        "H2" -> runtimeOnly("com.h2database:h2:2.2.222")
+        "H2.OLD" -> runtimeOnly("com.h2database:h2:2.1.214")
+        "H2.OLD.SLEEP" -> runtimeOnly("com.github.kelemen.mods.h2.sleep:h2:2.1.214")
+        "H2.OLD.NOSYNC", "H2.OLD.NOSYNC.SLEEP" -> runtimeOnly("com.github.kelemen.mods.h2.nosync:h2:2.1.214")
         "HSQL" -> runtimeOnly("org.hsqldb:hsqldb:2.7.2")
         "HSQL.SLEEP" -> runtimeOnly("com.github.kelemen.mods.hsqldb.sleep:hsqldb:2.7.2")
         "MARIA", "MARIA.SLEEP" -> runtimeOnly("org.mariadb.jdbc:mariadb-java-client:3.1.4")
